@@ -10,6 +10,8 @@ const ADM3 = '/ADM3_simplified.json';
 const ADM4 = '/ADM4_simplified.json';
 
 let currentLayer = null;
+let currentRegion = null, currentRegionCode = null;
+let currentLevel = 1;
 
 let map = L.map('map', {
     center: [12,122],
@@ -49,6 +51,12 @@ function displayRegions(data) {
         opacity: 0.9,
         sticky: true,
         className: "region-tooltip"
+      });
+      layer.on('click', function(e) {
+        currentRegion = feature.properties.ADM1_EN;
+        currentRegionCode = feature.properties.ADM1_PCODE;
+        console.log('Clicked: ', currentRegion, currentRegionCode);
+        //console.log('Provinces for ', feature.properties.ADM1_EN, ': ', feature.)
       });
       layer.on('mouseover', function(e) {
         e.target.setStyle({

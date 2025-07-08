@@ -1,0 +1,23 @@
+#map {
+  background: #fff;
+  border: 2px solid #333;
+  border-radius: 10px;
+}
+html, body, .container-fluid, .row.full-height, .col-6.p-0, #map {
+  height: 100%;
+  min-height: 100%;
+}
+#map { 
+  width: 100%; 
+  height: 100%; 
+}
+html, body { 
+  height: 100%; 
+  margin: 0; 
+}
+.full-height { 
+  height: calc(100vh - 56px); 
+}
+.leaflet-interactive:focus {
+  outline: none;
+}

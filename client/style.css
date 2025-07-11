@@ -4,12 +4,22 @@
   border-radius: 10px;
 }
 html, body, .container-fluid, .row.full-height, .col-6.p-0, #map {
+  font-family: 'Ubuntu', sans-serif;
+  font-weight: 500;
+  font-style: normal;
   height: 100%;
   min-height: 100%;
 }
 #map { 
   width: 100%; 
   height: 100%; 
+}
+.map-breadcrumb {
+  position: absolute;
+  margin: 7px;
+  border-radius: 4px;
+  z-index: 500;
+  background-color: aliceblue;
 }
 html, body { 
   height: 100%; 

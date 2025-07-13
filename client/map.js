@@ -1,5 +1,7 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import candidateRankModule from './candidateRank.js';
+
 
 const corner1 = L.latLng(21.13, 115.11);
 const corner2 = L.latLng(4.48, 131.00);
@@ -45,7 +47,6 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map)
 
-
 //Interaction
 function mouseOver(e) {
   const layer = e.target;
@@ -67,6 +68,7 @@ function mouseOut(e) {
   })
 }
 
+// Load administrative levels 1-4
 async function loadRegions() {
   try{
     const response = await fetch(ADM1);
@@ -117,6 +119,7 @@ async function loadBarangays() {
 
 async function displayRegions() {
   if (!provinceData) provinceData = await loadProvinces(ADM2);
+  candidateRankModule.loadCandidateRanks();
   currentLayer = L.geoJSON(regionData, {
     style: {
       color:'gray',
@@ -142,6 +145,7 @@ async function displayRegions() {
           feature.properties.ADM1_PCODE === mapState.selectedRegionCode
         )
         console.log('Filtered: ', filteredProvince.length);
+        candidateRankModule.loadCandidateRanks(mapState.selectedRegionCode);
         renderBreadcrumb();
         displayProvinces();
       });
@@ -185,6 +189,7 @@ async function displayProvinces() {
           feature.properties.ADM2_PCODE === mapState.selectedProvinceCode
         )
         console.log('Filtered: ', filteredCities.length);
+        candidateRankModule.loadCandidateRanks(mapState.selectedProvinceCode);
         renderBreadcrumb();
         displayCities();
       });
@@ -227,6 +232,7 @@ async function displayCities() {
           feature.properties.ADM3_PCODE === mapState.selectedCityCode
         )
         console.log('Filtered: ', filteredBarangays.length);
+        candidateRankModule.loadCandidateRanks(mapState.selectedCityCode);
         renderBreadcrumb();
         displayBarangays();
       });
@@ -263,6 +269,7 @@ async function displayBarangays() {
         mapState.selectedBarangay = feature.properties.ADM4_EN;
         mapState.selectedBarangayCode = feature.properties.ADM4_PCODE;
         console.log('Clicked: ', mapState.selectedBarangay, mapState.selectedBarangayCode);
+        candidateRankModule.loadCandidateRanks(mapState.selectedBarangayCode);
         renderBreadcrumb();
       });
       layer.on({
@@ -376,7 +383,7 @@ function renderBreadcrumb() {
 function createBreadcrumbItem(label, level, isLink) {
   const li = document.createElement('li');
   li.classList.add('breadcrumb-item');
-
+  
   if (isLink) {
     const a = document.createElement('a');
     a.href = '#';
@@ -398,3 +405,5 @@ async function init(){
 }
 
 init();
+
+export { mapState };

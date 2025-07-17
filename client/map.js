@@ -9,8 +9,8 @@ const bounds = L.latLngBounds(corner1, corner2);
 
 const ADM1 = '/ADM1_withNIRsimplified.json'
 const ADM2 = '/ADM2_simplified.json';
-const ADM3 = '/ADM3_simplified.json';
-const ADM4 = '/ADM4_simplified.json';
+const ADM3 = '/ADM3_updated.geojson';
+const ADM4 = '/ADM4_updated.geojson';
 //JSON data
 let regionData = null;
 let provinceData = null;

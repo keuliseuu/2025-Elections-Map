@@ -1,5 +1,13 @@
 // import { mapState } from './map.js';
 
+function showLoadingRank() {
+  document.getElementById('loadingRank').style.display = 'block';
+}
+
+function hideLoadingRank() {
+  document.getElementById('loadingRank').style.display = 'none';
+}
+
 function createCandidateRow(candidate, rank, totalVotes) {
   const percentage = totalVotes > 0 ? (candidate.total_votes / totalVotes * 100).toFixed(1) : 0;
   const isTop12 = rank <= 12;
@@ -38,6 +46,7 @@ function createCandidateRow(candidate, rank, totalVotes) {
 
 async function loadCandidateRanks(code = null) {
   try {
+    showLoadingRank();
     let url;
     if (code) {
         url = `/api/candidates?code=${code}`;
@@ -47,7 +56,10 @@ async function loadCandidateRanks(code = null) {
 
     const response = await fetch(url);
     const candidates = await response.json();
-    renderCandidateRanks(candidates);
+    if (candidates) {
+      hideLoadingRank();
+      renderCandidateRanks(candidates);
+    }
   } catch (err) {
     console.error('Failed to fetch candidate ranks:', err);
   }

@@ -64,8 +64,16 @@ function mouseOut(e) {
   e.target.setStyle({
     color:'gray',
     weight: 2,
-    fillOpacity: 0.4
+    fillOpacity: 0.3
   })
+}
+
+function showLoadingMap() {
+  document.getElementById('loadingMap').style.display = 'block';
+}
+
+function hideLoadingMap() {
+  document.getElementById('loadingMap').style.display = 'none';
 }
 
 // Load administrative levels 1-4
@@ -74,7 +82,10 @@ async function loadRegions() {
     const response = await fetch(ADM1);
     const data = await response.json();
     console.log('Loaded regions: ', data.features.length);
-    return data;
+    if (data) {
+      hideLoadingMap();
+      return data
+    }
   }
   catch(error){
     console.error('Failed to load regions: ', error);
@@ -83,10 +94,14 @@ async function loadRegions() {
 
 async function loadProvinces() {
   try{
+    showLoadingMap();
     const response = await fetch(ADM2);
     const data = await response.json();
     console.log('Loaded provinces: ', data.features.length);
-    return data;
+    if (data) {
+      hideLoadingMap();
+      return data
+    }
   }
   catch(error){
     console.error('Failed to load provinces: ', error);
@@ -95,10 +110,14 @@ async function loadProvinces() {
 
 async function loadCities() {
   try{
+    showLoadingMap();
     const response = await fetch(ADM3);
     const data = await response.json();
     console.log('Loaded cities:', data.features.length);
-    return data;
+    if (data) {
+      hideLoadingMap();
+      return data
+    }
   }
   catch(error) {
     console.error('Failed to load cities: ', error);
@@ -107,10 +126,14 @@ async function loadCities() {
 
 async function loadBarangays() {
   try{
+    showLoadingMap();
     const response = await fetch(ADM4);
     const data = await response.json();
     console.log("Loaded barangays: ", data.features.length);
-    return data;
+    if (data) {
+      hideLoadingMap();
+      return data
+    }
   }
   catch(error) {
     console.error('Failed to load barangays: ', error);
@@ -310,6 +333,7 @@ function goToLevel(level) {
     if (currentLayer) map.removeLayer(currentLayer);
 
     displayProvinces();
+    candidateRankModule.loadCandidateRanks(mapState.selectedRegionCode);
     renderBreadcrumb();
   }
   else if (level === 2) {
@@ -322,6 +346,7 @@ function goToLevel(level) {
     if (currentLayer) map.removeLayer(currentLayer);
 
     displayCities();
+    candidateRankModule.loadCandidateRanks(mapState.selectedProvinceCode);
     renderBreadcrumb();
   }
   else if (level === 3) {
@@ -332,6 +357,7 @@ function goToLevel(level) {
     if (currentLayer) map.removeLayer(currentLayer);
 
     displayBarangays();
+    candidateRankModule.loadCandidateRanks(mapState.selectedCityCode);
     renderBreadcrumb();
   }
   else if (level === 4) {

@@ -1,7 +1,7 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import candidateRankModule from './candidateRank.js';
-
+import { choroplethStatus, hideElements} from './choropleth.js';
 
 const corner1 = L.latLng(21.13, 115.11);
 const corner2 = L.latLng(4.48, 131.00);
@@ -24,7 +24,7 @@ let filteredCities = null;
 let filteredBarangays = null;
 
 const mapState = {
-  currentLevel: null,
+  currentLevel: 1,
   selectedRegion: null,
   selectedRegionCode: null,
   selectedProvince: null,
@@ -50,22 +50,24 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 //Interaction
 function mouseOver(e) {
   const layer = e.target;
-  layer.on('mouseover', function(e) {
-    e.target.setStyle({
+  if(!choroplethStatus.status) {
+    layer.setStyle({
       color:'yellow',
       weight: 2,
       fillOpacity: 0.4
-    });
-  });
+    })
+  }
 }
 
 function mouseOut(e) {
   const layer = e.target;
-  e.target.setStyle({
-    color:'gray',
-    weight: 2,
-    fillOpacity: 0.3
-  })
+  if(!choroplethStatus.status) {
+    layer.setStyle({
+      color:'gray',
+      weight: 2,
+      fillOpacity: 0.3
+    })
+  }
 }
 
 function showLoadingMap() {
@@ -141,8 +143,13 @@ async function loadBarangays() {
 }
 
 async function displayRegions() {
-  if (!provinceData) provinceData = await loadProvinces(ADM2);
+  hideElements();
+  choroplethStatus.status = false;
   candidateRankModule.loadCandidateRanks();
+  if (!provinceData) provinceData = await loadProvinces(ADM2);
+  if(currentLayer){
+    map.removeLayer(currentLayer);
+  }
   currentLayer = L.geoJSON(regionData, {
     style: {
       color:'gray',
@@ -159,7 +166,8 @@ async function displayRegions() {
         className: "region-tooltip"
       });
       layer.on('click', function(e) {
-        mapState.currentLevel = 1;
+        hideElements();
+        mapState.currentLevel = 2;
         mapState.selectedRegion = feature.properties.ADM1_EN;
         mapState.selectedRegionCode = feature.properties.ADM1_PCODE;
         console.log('Clicked: ', mapState.selectedRegion, mapState.selectedRegionCode);
@@ -182,6 +190,7 @@ async function displayRegions() {
 }
 
 async function displayProvinces() {
+  choroplethStatus.status = false;
   if (!citiesData) citiesData = await loadCities(ADM3);
   console.log('Current level', mapState.currentLevel);
   if(currentLayer){
@@ -203,7 +212,8 @@ async function displayProvinces() {
         className: "province-tooltip"
       });
       layer.on('click', function(e) {
-        mapState.currentLevel = 2;
+        hideElements();
+        mapState.currentLevel = 3;
         mapState.selectedProvince = feature.properties.ADM2_EN;
         mapState.selectedProvinceCode = feature.properties.ADM2_PCODE;
         console.log('Clicked: ', mapState.selectedProvince, mapState.selectedProvinceCode);
@@ -226,6 +236,7 @@ async function displayProvinces() {
 }
 
 async function displayCities() {
+  choroplethStatus.status = false;
   if (!barangayData) barangayData = await loadBarangays(ADM4);
   if(currentLayer){
     map.removeLayer(currentLayer);
@@ -246,7 +257,8 @@ async function displayCities() {
         className: "city/municipality-tooltip"
       });
       layer.on('click', function(e) {
-        mapState.currentLevel = 3;
+        hideElements();
+        mapState.currentLevel = 4;
         mapState.selectedCity = feature.properties.ADM3_EN;
         mapState.selectedCityCode = feature.properties.ADM3_PCODE;
         console.log('Clicked: ', mapState.selectedCity, mapState.selectedCityCode);
@@ -269,6 +281,7 @@ async function displayCities() {
 }
 
 async function displayBarangays() {
+  choroplethStatus.status = false;
   if(currentLayer){
     map.removeLayer(currentLayer);
   }
@@ -288,7 +301,11 @@ async function displayBarangays() {
         className: "barangay-tooltip"
       });
       layer.on('click', function(e) {
-        mapState.currentLevel = 4;
+        if(choroplethStatus) {
+          displayBarangays();
+          hideElements();
+        }
+        mapState.currentLevel = 5;
         mapState.selectedBarangay = feature.properties.ADM4_EN;
         mapState.selectedBarangayCode = feature.properties.ADM4_PCODE;
         console.log('Clicked: ', mapState.selectedBarangay, mapState.selectedBarangayCode);
@@ -306,7 +323,7 @@ async function displayBarangays() {
 
 function goToLevel(level) {
   if (level === 0) {
-    mapState.currentLevel = 0;
+    mapState.currentLevel = 1;
     mapState.selectedRegion = null;
     mapState.selectedRegionCode = null;
     mapState.selectedProvince = null;
@@ -320,9 +337,10 @@ function goToLevel(level) {
 
     displayRegions();
     renderBreadcrumb();
+    hideElements();
   }
   else if (level === 1) {
-    mapState.currentLevel = 1;
+    mapState.currentLevel = 2;
     mapState.selectedProvince = null;
     mapState.selectedProvinceCode = null;
     mapState.selectedCity = null;
@@ -335,9 +353,10 @@ function goToLevel(level) {
     displayProvinces();
     candidateRankModule.loadCandidateRanks(mapState.selectedRegionCode);
     renderBreadcrumb();
+    hideElements();
   }
   else if (level === 2) {
-    mapState.currentLevel = 2;
+    mapState.currentLevel = 3;
     mapState.selectedCity = null;
     mapState.selectedCityCode = null;
     mapState.selectedBarangay = null;
@@ -348,9 +367,10 @@ function goToLevel(level) {
     displayCities();
     candidateRankModule.loadCandidateRanks(mapState.selectedProvinceCode);
     renderBreadcrumb();
+    hideElements();
   }
   else if (level === 3) {
-    mapState.currentLevel = 3;
+    mapState.currentLevel = 4;
     mapState.selectedBarangay = null;
     mapState.selectedBarangayCode = null;   
 
@@ -359,9 +379,10 @@ function goToLevel(level) {
     displayBarangays();
     candidateRankModule.loadCandidateRanks(mapState.selectedCityCode);
     renderBreadcrumb();
+    hideElements();
   }
   else if (level === 4) {
-    mapState.currentLevel = 4;
+    mapState.currentLevel = 5;
 
     if (currentLayer) map.removeLayer(currentLayer);
 
@@ -369,7 +390,7 @@ function goToLevel(level) {
   }
 }
 
-//breadcrumb
+//Breadcrumb
 
 function renderBreadcrumb() {
   const breadcrumb = document.querySelector('#breadcrumb');
@@ -378,24 +399,24 @@ function renderBreadcrumb() {
   const currentLevel = mapState.currentLevel;
 
   breadcrumb.appendChild(
-    createBreadcrumbItem('Philippines', 0, currentLevel > 0)
+    createBreadcrumbItem('Philippines', 0, currentLevel > 1)
   );
 
   if (mapState.selectedRegion) {
     breadcrumb.appendChild(
-      createBreadcrumbItem(mapState.selectedRegion, 1, currentLevel > 1)
+      createBreadcrumbItem(mapState.selectedRegion, 1, currentLevel > 2)
     );
   }
 
   if (mapState.selectedProvince) {
     breadcrumb.appendChild(
-      createBreadcrumbItem(mapState.selectedProvince, 2, currentLevel > 2)
+      createBreadcrumbItem(mapState.selectedProvince, 2, currentLevel > 3)
     );
   }
 
   if (mapState.selectedCity) {
     breadcrumb.appendChild(
-      createBreadcrumbItem(mapState.selectedCity, 3, currentLevel > 3)
+      createBreadcrumbItem(mapState.selectedCity, 3, currentLevel > 4)
     );
   }
 
@@ -432,4 +453,5 @@ async function init(){
 
 init();
 
-export { mapState };
+export { mapState, currentLayer };
+export { displayRegions, displayProvinces, displayCities, displayBarangays };

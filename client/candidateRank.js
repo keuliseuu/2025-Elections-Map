@@ -1,4 +1,6 @@
-// import { mapState } from './map.js';
+import { mapState } from './map.js';
+import { currentLayer } from "./map";
+import { displayChoropleth } from "./choropleth";
 
 function showLoadingRank() {
   document.getElementById('loadingRank').style.display = 'block';
@@ -32,11 +34,14 @@ function createCandidateRow(candidate, rank, totalVotes) {
           <div class="text-muted small">${candidate.party}</div>
           <div class="progress mt-1" style="height: 8px;">
             <div class="progress-bar ${barColor}" style="width: ${percentage}%;"></div>
-          </div>
+          </div>  
         </div>
         <div class="text-end ms-3" style="min-width: 80px;">
           <div><strong>${candidate.total_votes.toLocaleString()}</strong></div>
           <div class="text-muted small">${percentage}%</div>
+          <button class="btn btn-sm btn-outline-primary mt-2 choropleth-btn" data-candidate-id="${candidate.id}">
+              View Choropleth
+          </button>
         </div>
       </div>
     </div>
@@ -71,18 +76,24 @@ function renderCandidateRanks(candidates) {
 
   const totalVotes = candidates.reduce((sum, c) => sum + c.total_votes, 0);
 
-//   let locationName = 'National Results';
-//   if (mapState.currentLevel === 1) locationName = mapState.selectedRegion;
-//   else if (mapState.currentLevel === 2) locationName = mapState.selectedProvince;
-//   else if (mapState.currentLevel === 3) locationName = mapState.selectedCity;
-//   else if (mapState.currentLevel === 4) locationName = mapState.selectedBarangay;
-  
-//   document.getElementById('dynamic-header').textContent = `${locationName} - ${totalVotes.toLocaleString()}`;
-
   candidates.forEach((candidate, index) => {
     const row = createCandidateRow(candidate, index + 1, totalVotes);
     container.appendChild(row);
   });
+  const buttons = container.querySelectorAll('.choropleth-btn');
+  buttons.forEach((button) => {
+    button.addEventListener('click', (e) => {
+      const candidateId = e.currentTarget.dataset.candidateId;
+      console.log(candidateId);
+      displayChoropleth(currentLayer, candidateId)
+    });
+  });
+
+  if (mapState.currentLevel === 5) {
+    buttons.forEach(button => {
+      button.disabled = true;
+    })
+  }
 }
 
 export default {loadCandidateRanks};

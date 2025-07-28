@@ -1,4 +1,5 @@
 import { mapState, displayRegions, displayProvinces, displayCities, displayBarangays } from "./map";
+import { hideLoadingRank } from "./candidateRank";
 
 let label, selectedColors;
 
@@ -89,17 +90,27 @@ async function displayChoropleth(currentLayer, candidateId) {
   });
   
   currentLayer.eachLayer(function(featureLayer) {
-    const pcode = featureLayer.feature.properties[`ADM${mapState.currentLevel}_PCODE`];
-    const data = tooltipLookup[pcode];
-    const parsedVotes = parseInt(data.candidate_votes);
+    try{
+      const pcode = featureLayer.feature.properties[`ADM${mapState.currentLevel}_PCODE`];
+      const data = tooltipLookup[pcode];
+      const parsedVotes = parseInt(data.candidate_votes);
 
-    label = featureLayer.feature.properties[`ADM${mapState.currentLevel}_EN`];
-    if(data) {
-      label += `<br>Candidate: ${data.candidate_name}<br>Votes: ${parsedVotes.toLocaleString('en')}`;
+      label = featureLayer.feature.properties[`ADM${mapState.currentLevel}_EN`];
+      if(data) {
+        label += `<br>Candidate: ${data.candidate_name}<br>Votes: ${parsedVotes.toLocaleString('en')}`;
+      }
+      activeCandidate(data.candidate_name);
+      featureLayer.setTooltipContent(label)
     }
-    activeCandidate(data.candidate_name);
-    featureLayer.setTooltipContent(label)
+    catch(error){
+      console.log('No results found for location');
+      console.log(error);
+      const noResultsModal = new bootstrap.Modal(document.getElementById('noResultsModal'));
+      noResultsModal.show();
+    }
   })
+
+  hideLoadingRank();
   // console.log("Debug 2", currentLayer);
 }
 
@@ -138,12 +149,14 @@ function hideDisableButton() {
 
 //Active candidate button
 function showActiveCandidate() {
+  activeCandidateDiv.classList.add('d-flex');
   activeCandidateDiv.style.display = 'block';
 }
 
 function hideActiveCandidate() {
-  activeCandidateDiv.textContent = '';
+  activeCandidateDiv.classList.remove('d-flex');
   activeCandidateDiv.style.display = 'none';
+  activeCandidateDiv.textContent = '';
 }
 
 //Color selection dropdown

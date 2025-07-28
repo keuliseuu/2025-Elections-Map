@@ -86,6 +86,7 @@ function renderCandidateRanks(candidates) {
       const candidateId = e.currentTarget.dataset.candidateId;
       console.log(candidateId);
       displayChoropleth(currentLayer, candidateId)
+      showLoadingRank();
     });
   });
 
@@ -97,3 +98,4 @@ function renderCandidateRanks(candidates) {
 }
 
 export default {loadCandidateRanks};
+export {hideLoadingRank};

@@ -43,6 +43,12 @@ let map = L.map('map', {
     zoomControl: false
 });
 
+map.on('dragstart', function() {
+  currentLayer.eachLayer(function(layer) {
+    layer.closeTooltip();
+  });
+});
+
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map)
@@ -56,17 +62,14 @@ function mouseOver(e) {
       weight: 2,
       fillOpacity: 0.4
     })
+    layer.bringToFront();
   }
 }
 
 function mouseOut(e) {
   const layer = e.target;
   if(!choroplethStatus.status) {
-    layer.setStyle({
-      color:'gray',
-      weight: 2,
-      fillOpacity: 0.3
-    })
+    currentLayer.resetStyle(layer);
   }
 }
 
@@ -152,8 +155,9 @@ async function displayRegions() {
   }
   currentLayer = L.geoJSON(regionData, {
     style: {
-      color:'gray',
+      color:'black',
       weight: 2,
+      fillColor: 'gray',
       fillOpacity: 0.4
     },
     onEachFeature: function(feature, layer) {
@@ -198,8 +202,9 @@ async function displayProvinces() {
   }
   currentLayer = L.geoJSON(filteredProvince, {
     style: {
-      color:'gray',
+      color:'black',
       weight: 2,
+      fillColor: 'gray',
       fillOpacity: 0.4
     },
     onEachFeature: function(feature, layer) {
@@ -243,8 +248,9 @@ async function displayCities() {
   }
   currentLayer = L.geoJSON(filteredCities, {
     style: {
-      color:'gray',
+      color:'black',
       weight: 2,
+      fillColor: 'gray',
       fillOpacity: 0.4
     },
     onEachFeature: function(feature, layer) {
@@ -287,8 +293,9 @@ async function displayBarangays() {
   }
   currentLayer = L.geoJSON(filteredBarangays, {
     style: {
-      color:'gray',
+      color:'black',
       weight: 2,
+      fillColor: 'gray',
       fillOpacity: 0.4
     },
     onEachFeature: function(feature, layer) {

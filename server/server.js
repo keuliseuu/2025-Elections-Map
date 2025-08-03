@@ -4,6 +4,11 @@ import dotenv from 'dotenv';
 import pg from 'pg';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const { Pool } = pg;
@@ -11,9 +16,44 @@ const { Pool } = pg;
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  methods: ['GET', 'POST'],
+  credentials: false
+}));
 app.use(express.json());
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        'https://cdnjs.cloudflare.com',
+        'https://cdn.jsdelivr.net'
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        'https://fonts.googleapis.com',
+        'https://cdnjs.cloudflare.com',
+        'https://cdn.jsdelivr.net'
+      ],
+      fontSrc: [
+        "'self'",
+        'https://fonts.gstatic.com',
+        'https://cdnjs.cloudflare.com',
+        'https://cdn.jsdelivr.net'
+      ],
+      connectSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https://tile.openstreetmap.org", "https://i.ibb.co"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    }
+  }
+}));
+app.set('trust proxy', 1);
+app.timeout = 30000;
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -25,7 +65,7 @@ const pool = new Pool({
 
 const validateCode = (code) => {
   if (!code) return null;
-  return /^[a-zA-Z0-9]+$/.test(code) ? code : null;
+  return /^[a-zA-Z0-9]{1,15}$/.test(code) ? code : null;
 };
 
 const validateCandidateId = (id) => {
@@ -37,9 +77,17 @@ const validateCandidateId = (id) => {
   }
 };
 
+app.use(express.static(path.join(__dirname, '../dist')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
+});
+
 app.use('/api/', rateLimit({
   windowMs: 1 * 60 * 1000,
   max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { error: 'Too many requests, please slow down' }
 }));
 
@@ -89,15 +137,15 @@ app.get('/api/votes', async (req, res) => {
     const candidateId = validateCandidateId(req.query.candidate_id);
     const currentLevel = parseInt(req.query.current_level);
     const parentCode = validateCode(req.query.parent_code);
-    console.log(currentLevel);
+    // console.log(currentLevel);
     
     let query, selectFields, whereClause, groupByFields, params;
     
     switch (currentLevel) {
       case 1: //Region
-        selectFields = `c.id, el.adm1_pcode, el.er1_name `;
+        selectFields = `c.id, el.adm1_pcode `;
         whereClause = `c.id = $1`;
-        groupByFields = `c.id, el.adm1_pcode, el.er1_name`;
+        groupByFields = `c.id, el.adm1_pcode`;
         break;
         
       case 2: //Province
@@ -154,9 +202,14 @@ app.get('/api/votes', async (req, res) => {
   } catch (error) {
     console.error('Error fetching votes for candidate: ', error);
     res.status(500).json({ error: 'Internal server error' });
-  }
+  } 
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong' });
+});
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${port}`);
 });

@@ -11,7 +11,9 @@ function hideLoadingRank() {
 }
 
 function createCandidateRow(candidate, rank, totalVotes) {
-  const percentage = totalVotes > 0 ? (candidate.total_votes / totalVotes * 100).toFixed(1) : 0;
+  const rawPercentage = totalVotes > 0 ? (candidate.total_votes / totalVotes * 100) : 0;
+  const percentage = rawPercentage.toFixed(1);
+  const logBarWidth = rawPercentage > 0 ? (Math.log(rawPercentage + 1) / Math.log(101) * 100) : 0;
   const isTop12 = rank <= 12;
   const barColor = isTop12 ? 'bg-success' : 'bg-primary';
   const circleColor = isTop12 ? 'bg-success' : 'bg-primary';
@@ -27,13 +29,13 @@ function createCandidateRow(candidate, rank, totalVotes) {
           </div>
         </div>
         <div class="me-3">
-          <img src="${candidate.photo_url}" alt="${candidate.name}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+          <img src="${candidate.photo_url}" alt="${candidate.name}" class="rounded-circle border border-dark" style="width: 50px; height: 50px; object-fit: cover;">
         </div>
         <div class="flex-grow-1">
           <div><strong>${candidate.name}</strong></div>
           <div class="text-muted small">${candidate.party}</div>
           <div class="progress mt-1" style="height: 8px;">
-            <div class="progress-bar ${barColor}" style="width: ${percentage}%;"></div>
+            <div class="progress-bar ${barColor}" style="width: ${logBarWidth.toFixed(1)}%;"></div>
           </div>  
         </div>
         <div class="text-end ms-3" style="min-width: 80px;">

@@ -4,10 +4,14 @@ import { displayChoropleth } from "./choropleth";
 
 function showLoadingRank() {
   document.getElementById('loadingRank').style.display = 'block';
+  document.getElementById('map').style.pointerEvents = 'none';
+  document.getElementById('rankDiv').style.pointerEvents = 'none';
 }
 
 function hideLoadingRank() {
   document.getElementById('loadingRank').style.display = 'none';
+  document.getElementById('map').style.pointerEvents = 'auto';
+  document.getElementById('rankDiv').style.pointerEvents = 'auto';
 }
 
 function createCandidateRow(candidate, rank, totalVotes) {

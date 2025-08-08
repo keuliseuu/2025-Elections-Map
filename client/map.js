@@ -7,10 +7,16 @@ const corner1 = L.latLng(21.13, 115.11);
 const corner2 = L.latLng(4.48, 131.00);
 const bounds = L.latLngBounds(corner1, corner2);
 
-const ADM1 = '/ADM1_withNIRsimplified.json'
-const ADM2 = '/ADM2_simplified.json';
+// const ADM1 = '/ADM1_withNIRsimplified.json'
+// const ADM2 = '/ADM2_simplified.json';
+// const ADM3 = '/ADM3_updated.geojson';
+// const ADM4 = '/ADM4_updated.geojson';
+
+const ADM1 = '/ADM1_withNIR_reduced.json';
+const ADM2 = '/ADM2_reduced.json';
 const ADM3 = '/ADM3_updated.geojson';
-const ADM4 = '/ADM4_updated.geojson';
+const ADM4 = '/ADM4_reduced.geojson';
+
 //JSON data
 let regionData = null;
 let provinceData = null;
@@ -75,10 +81,14 @@ function mouseOut(e) {
 
 function showLoadingMap() {
   document.getElementById('loadingMap').style.display = 'block';
+  document.getElementById('map').style.pointerEvents = 'none';
+  document.getElementById('rankDiv').style.pointerEvents = 'none';
 }
 
 function hideLoadingMap() {
   document.getElementById('loadingMap').style.display = 'none';
+  document.getElementById('map').style.pointerEvents = 'auto';
+  document.getElementById('rankDiv').style.pointerEvents = 'auto';
 }
 
 // Load administrative levels 1-4
